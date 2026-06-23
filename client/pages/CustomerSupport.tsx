@@ -51,6 +51,11 @@ interface SpeechRecognition extends EventTarget {
   abort(): void;
 }
 
+// Utility to generate unique IDs
+const generateUniqueId = (): string => {
+  return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
 export default function CustomerSupport() {
   const [customerId, setCustomerId] = useState("cust_001");
   const [orderId, setOrderId] = useState("ORD_20240315");
@@ -58,7 +63,7 @@ export default function CustomerSupport() {
   const [reason, setReason] = useState("Product does not match description");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      id: "welcome_1",
+      id: generateUniqueId(),
       role: "system",
       content:
         "Welcome to AI Customer Support. I'll help process your refund request using intelligent policy validation.",
@@ -274,7 +279,7 @@ export default function CustomerSupport() {
         setMessages((prev) => [
           ...prev,
           {
-            id: `voice_${Date.now()}`,
+            id: generateUniqueId(),
             role: "user",
             content: `[Voice message] ${finalTranscriptRef.current.trim()}`,
             timestamp: Date.now(),
@@ -367,7 +372,13 @@ export default function CustomerSupport() {
 
       const data = (await response.json()) as ProcessRefundResponse;
 
-      setMessages((prev) => [...prev, ...(data.messages || [])]);
+      // Ensure all messages from API have unique IDs
+      const apiMessages = (data.messages || []).map((msg) => ({
+        ...msg,
+        id: generateUniqueId(),
+      }));
+
+      setMessages((prev) => [...prev, ...apiMessages]);
       setDecision({ ...data, processing: true });
 
       setTimeout(() => {
@@ -380,7 +391,7 @@ export default function CustomerSupport() {
       setMessages((prev) => [
         ...prev,
         {
-          id: `error_${Date.now()}`,
+          id: generateUniqueId(),
           role: "system",
           content: "Error processing refund. Please try again.",
           timestamp: Date.now(),
