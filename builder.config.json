@@ -1,0 +1,7 @@
+{
+  "database": {
+    "kind": "postgres",
+    "migrations": "drizzle",
+    "schemaDir": "drizzle"
+  }
+}
